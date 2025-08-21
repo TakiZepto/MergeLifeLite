@@ -1,0 +1,17 @@
+stat_name,event_text,token_name,token_description
+intellect,You've got reconized by a great scholar,Scholar Token,(Fake) You get access to new events in the Education category
+intellect,You've make an important scientific discovery,Science Token,(Fake) From now on every event bring you $50
+intellect,You created your own AI robot,Robot Token,(Fake) Every 3 events get +1 point in Fitness
+intellect,You tutored all your friends to pass the year final exam,Tutor Token,(Fake) Every 3 events get +1 point in Smarts
+looks,You're a real people magnet and everyone is drawn to your presence.,Beauty Token,(Fake) Every 3 events get +1 point in Looks
+looks,You've made the cover of a local magazine,Fame Token,(Fake) From now on every event bring you $50
+looks,You've got into a relationship!,Relationship Token,(Fake) You get access to new events in the Social category
+looks,You're fashion vlog got million views,Vlog Token,(Fake) You get access to new events in the Finance category
+body,You became a premium member of the local gym,Gym Token,(Fake) Every 3 events get +1 point in Fitness
+body,You won a climbing championship,Champion Token,(Fake) You got $3000 from the championship prize
+body,You feel energetic enough to take a part time job,Job Token,(Fake) From now on every event bring you $70
+body,"Your physical form is perfect, you feel healthier than ever",Strength Token,(Fake) You get access to new events in the Wellness category
+spirituality,Your zen attitude calm everyone around you,Calm Token,(Fake) You get access to new events in the Wellness category
+spirituality,Your calm aura makes all animals drawn to you,Animal Token,(Fake) You get access to new events in the Entertainment category
+spirituality,You are a real guide. People follow you.,Guide Token,(Fake) Every 3 events get +1 point in Spiritual & $100
+spirituality,You've found inner peace and cosmic connection.,Sage Token,(Fake) You unlocked a new wheel category: Super power

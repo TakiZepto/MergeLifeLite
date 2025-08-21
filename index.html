@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Wheel - Spin Your Destiny</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Stats Section */
+        .stats-section {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            padding: 20px;
+            color: white;
+        }
+
+        .stats-title {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-item {
+            margin-bottom: 15px;
+            animation: slideIn 0.5s ease backwards;
+        }
+
+        .stat-item:nth-child(2) { animation-delay: 0.1s; }
+        .stat-item:nth-child(3) { animation-delay: 0.2s; }
+        .stat-item:nth-child(4) { animation-delay: 0.3s; }
+        .stat-item:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .stat-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .stat-bar {
+            background: rgba(255, 255, 255, 0.3);
+            height: 25px;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .stat-fill.max {
+            background: linear-gradient(90deg, #FFD700, #FF6B6B);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.1); }
+        }
+
+        /* Tokens Section */
+        .tokens-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tokens-title {
+            color: white;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .tokens-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            min-height: 40px;
+        }
+
+        .token {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            animation: tokenAppear 0.5s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes tokenAppear {
+            from { transform: scale(0) rotate(360deg); }
+            to { transform: scale(1) rotate(0); }
+        }
+
+        /* Event Section */
+        .event-section {
+            padding: 30px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .event-category {
+            text-align: center;
+            color: #6a11cb;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+
+        .event-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            text-align: center;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .choice-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-btn:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        .choice-btn:hover:before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .choice-a {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .choice-b {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .choice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .spin-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: none;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .spin-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+        }
+
+        .spin-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Wheel Overlay */
+        .wheel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .wheel-overlay.active {
+            display: flex;
+        }
+
+        .wheel-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+        }
+
+        .wheel-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        #wheelCanvas {
+            margin: 20px auto;
+            display: block;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+        }
+
+        .wheel-spin-btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .wheel-spin-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .wheel-spin-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        /* Discovery Animation */
+        .discovery-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #FFD700, #FF6B6B);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            opacity: 0;
+            animation: discoveryPop 2s ease;
+        }
+
+        @keyframes discoveryPop {
+            0% { 
+                opacity: 0; 
+                transform: translate(-50%, -50%) scale(0.5) rotate(-10deg); 
+            }
+            20% { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1.2) rotate(5deg); 
+            }
+            40% { 
+                transform: translate(-50%, -50%) scale(1) rotate(-2deg); 
+            }
+            60% { 
+                transform: translate(-50%, -50%) scale(1.1) rotate(1deg); 
+            }
+            80% { 
+                transform: translate(-50%, -50%) scale(1) rotate(0deg); 
+            }
+            95% { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1) rotate(0deg); 
+            }
+            100% { 
+                opacity: 0; 
+                transform: translate(-50%, -50%) scale(0.8) rotate(0deg); 
+            }
+        }
+
+        /* Reward Display */
+        .reward-display {
+            background: linear-gradient(135deg, #84fab0, #8fd3f4);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            color: #333;
+            font-weight: 600;
+            text-align: center;
+            animation: slideInUp 0.5s ease;
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stat-change {
+            display: inline-block;
+            margin: 5px;
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        /* Golden Event */
+        .golden-event-display {
+            background: linear-gradient(135deg, #FFD700, #FF6B6B);
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            animation: goldenPulse 2s ease infinite;
+        }
+
+        @keyframes goldenPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }
+        }
+
+        .golden-event-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .golden-event-text {
+            font-size: 18px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .golden-token-earned {
+            font-size: 20px;
+            font-weight: bold;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            display: inline-block;
+        }
+
+
+
+
+
+        /* Mobile Responsive */
+        @media (max-width: 480px) {
+            .game-container {
+                margin: 10px;
+            }
+            
+            .stats-title {
+                font-size: 20px;
+            }
+            
+            .event-text {
+                font-size: 16px;
+            }
+            
+            .choice-btn {
+                font-size: 14px;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+       
+        
+        <!-- Stats Section (SINGLE INSTANCE) -->
+        <div class="stats-section">
+            <div class="stats-title">⚡ Your Life Stats ⚡</div>
+            <div class="stat-item">
+                <div class="stat-label">
+                    <span>🧠 Intellect</span>
+                    <span id="intellect-value">0/10</span>
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-fill" id="intellect-bar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">
+                    <span>✨ Looks</span>
+                    <span id="looks-value">0/10</span>
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-fill" id="looks-bar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">
+                    <span>💪 Body</span>
+                    <span id="body-value">0/10</span>
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-fill" id="body-bar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">
+                    <span>🕊️ Spirituality</span>
+                    <span id="spirituality-value">0/10</span>
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-fill" id="spirituality-bar" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <!-- Tokens Section -->
+            <div class="tokens-section">
+                <div class="tokens-title">🏆 Tokens Earned</div>
+                <div class="tokens-container" id="tokens-container">
+                    <!-- Tokens will appear here -->
+                </div>
+            </div>
+            <!-- Add this inside the stats-section, maybe after the tokens-section -->
+            <div style="text-align: center; margin-top: 15px;">
+                <button onclick="resetGameData()" style="padding: 8px 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; color: white; cursor: pointer; font-size: 12px;">
+                    Reset Progress
+                </button>
+            </div>
+        </div>
+
+        <!-- Event Section -->
+        <div class="event-section" id="event-section">
+            <button class="spin-btn" id="initial-spin-btn" onclick="showWheelPopup()">🎯 Start Your Journey - Spin the Wheel!</button>
+        </div>
+    </div>
+
+    <!-- Wheel Overlay -->
+    <div class="wheel-overlay" id="wheel-overlay">
+        <div class="wheel-container">
+            <div class="wheel-title">🎡 Spin the Wheel of Life!</div>
+            <canvas id="wheelCanvas" width="300" height="300"></canvas>
+            <button class="wheel-spin-btn" id="wheel-spin-btn">SPIN!</button>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        const gameState = {
+            stats: {
+                intellect: 0,
+                looks: 0,
+                body: 0,
+                spirituality: 0
+            },
+            tokens: [],
+            currentEvent: null,
+            isSpinning: false,
+            events: [],
+            goldenEvents: [],
+            wheelConfig: [],
+            completedEvents: new Set(), // Track all completed events for prerequisites
+            usedUniqueEvents: new Set(), // Track unique events that can't be repeated
+            gameStarted: false,
+           
+            discoveredCategories: new Set(), // already there
+            goldenEventIndex: {} // <-- NEW: stores rotation index per stat
+        };
+
+        // Sample Data (will be replaced with CSV data when provided)
+        const sampleEvents = [
+            {
+                event_id: 1,
+                category: "education",
+                intro_text: "You discover an online course about ancient philosophy.",
+                choice_a_text: "Take detailed notes",
+                choice_a_intellect: 2,
+                choice_a_looks: 0,
+                choice_a_body: 0,
+                choice_a_spirituality: 1,
+                choice_a_reward_text: "You gained deep insights and inner peace.",
+                choice_b_text: "Just watch casually",
+                choice_b_intellect: 1,
+                choice_b_looks: 0,
+                choice_b_body: 0,
+                choice_b_spirituality: 0,
+                choice_b_reward_text: "You learned some interesting facts.",
+                prerequisite_event_id: "", // No prerequisite
+                is_repeatable: "true" // Can be repeated
+            },
+            {
+                event_id: 2,
+                category: "social",
+                intro_text: "You're invited to give a presentation at work.",
+                choice_a_text: "Prepare extensively",
+                choice_a_intellect: 2,
+                choice_a_looks: 1,
+                choice_a_body: 0,
+                choice_a_spirituality: 0,
+                choice_a_reward_text: "Your thorough preparation impressed everyone!",
+                choice_b_text: "Wing it with confidence",
+                choice_b_intellect: 0,
+                choice_b_looks: 2,
+                choice_b_body: 0,
+                choice_b_spirituality: 1,
+                choice_b_reward_text: "Your natural charisma carried you through.",
+                prerequisite_event_id: "",
+                is_repeatable: "true"
+            },
+            {
+                event_id: 3,
+                category: "wellness",
+                intro_text: "You find a new hiking trail near your home.",
+                choice_a_text: "Challenge the difficult path",
+                choice_a_intellect: 1,
+                choice_a_looks: 0,
+                choice_a_body: 3,
+                choice_a_spirituality: 1,
+                choice_a_reward_text: "You feel accomplished and connected to nature!",
+                choice_b_text: "Take the scenic easy route",
+                choice_b_intellect: 0,
+                choice_b_looks: 1,
+                choice_b_body: 1,
+                choice_b_spirituality: 2,
+                choice_b_reward_text: "You enjoyed peaceful reflection and fresh air.",
+                prerequisite_event_id: "",
+                is_repeatable: "true"
+            },
+            {
+                event_id: 4,
+                category: "entertainment",
+                intro_text: "A friend invites you to try rock climbing.",
+                choice_a_text: "Learn proper technique first",
+                choice_a_intellect: 2,
+                choice_a_looks: 0,
+                choice_a_body: 1,
+                choice_a_spirituality: 0,
+                choice_a_reward_text: "Your methodical approach paid off!",
+                choice_b_text: "Jump right in boldly",
+                choice_b_intellect: 0,
+                choice_b_looks: 2,
+                choice_b_body: 2,
+                choice_b_spirituality: 0,
+                choice_b_reward_text: "Your adventurous spirit impressed others.",
+                prerequisite_event_id: "",
+                is_repeatable: "false" // Unique event, can only happen once
+            },
+            {
+                event_id: 5,
+                category: "finances",
+                intro_text: "You receive an unexpected bonus at work.",
+                choice_a_text: "Invest in education courses",
+                choice_a_intellect: 3,
+                choice_a_looks: 0,
+                choice_a_body: 0,
+                choice_a_spirituality: 0,
+                choice_a_reward_text: "You expanded your valuable skills!",
+                choice_b_text: "Treat yourself to a makeover",
+                choice_b_intellect: 0,
+                choice_b_looks: 3,
+                choice_b_body: 0,
+                choice_b_spirituality: 0,
+                choice_b_reward_text: "You feel confident and attractive.",
+                prerequisite_event_id: "",
+                is_repeatable: "false"
+            },
+            // More events for variety
+            {
+                event_id: 6,
+                category: "education",
+                intro_text: "A library is having a rare book sale.",
+                choice_a_text: "Buy philosophy books",
+                choice_a_intellect: 1,
+                choice_a_looks: 0,
+                choice_a_body: 0,
+                choice_a_spirituality: 2,
+                choice_a_reward_text: "You discovered wisdom in ancient texts.",
+                choice_b_text: "Get fashion magazines",
+                choice_b_intellect: 0,
+                choice_b_looks: 2,
+                choice_b_body: 0,
+                choice_b_spirituality: 0,
+                choice_b_reward_text: "You learned about the latest trends.",
+                prerequisite_event_id: "",
+                is_repeatable: "true"
+            },
+            {
+                event_id: 7,
+                category: "social",
+                intro_text: "Your colleague invites you to a gym session.",
+                choice_a_text: "Join enthusiastically",
+                choice_a_intellect: 0,
+                choice_a_looks: 1,
+                choice_a_body: 2,
+                choice_a_spirituality: 0,
+                choice_a_reward_text: "You built strength and friendship!",
+                choice_b_text: "Suggest coffee instead",
+                choice_b_intellect: 1,
+                choice_b_looks: 1,
+                choice_b_body: 0,
+                choice_b_spirituality: 1,
+                choice_b_reward_text: "You had a meaningful conversation.",
+                prerequisite_event_id: "",
+                is_repeatable: "true"
+            },
+            {
+                event_id: 8,
+                category: "wellness",
+                intro_text: "You wake up early with extra energy.",
+                choice_a_text: "Go for a morning run",
+                choice_a_intellect: 0,
+                choice_a_looks: 1,
+                choice_a_body: 2,
+                choice_a_spirituality: 1,
+                choice_a_reward_text: "You feel energized and alive!",
+                choice_b_text: "Meditate and journal",
+                choice_b_intellect: 1,
+                choice_b_looks: 0,
+                choice_b_body: 0,
+                choice_b_spirituality: 3,
+                choice_b_reward_text: "You found clarity and inner peace.",
+                prerequisite_event_id: "",
+                is_repeatable: "true"
+            },
+            {
+                event_id: 9,
+                category: "entertainment",
+                intro_text: "You discover a new hobby store downtown.",
+                choice_a_text: "Try painting class",
+                choice_a_intellect: 1,
+                choice_a_looks: 0,
+                choice_a_body: 0,
+                choice_a_spirituality: 2,
+                choice_a_reward_text: "You expressed your creative soul!",
+                choice_b_text: "Join dance lessons",
+                choice_b_intellect: 0,
+                choice_b_looks: 2,
+                choice_b_body: 2,
+                choice_b_spirituality: 0,
+                choice_b_reward_text: "You learned some smooth moves!",
+                prerequisite_event_id: "",
+                is_repeatable: "true"
+            },
+            {
+                event_id: 10,
+                category: "finances",
+                intro_text: "You find a $100 bill on the street.",
+                choice_a_text: "Donate to charity",
+                choice_a_intellect: 0,
+                choice_a_looks: 0,
+                choice_a_body: 0,
+                choice_a_spirituality: 3,
+                choice_a_reward_text: "Your kindness created good karma!",
+                choice_b_text: "Buy fitness equipment",
+                choice_b_intellect: 0,
+                choice_b_looks: 0,
+                choice_b_body: 3,
+                choice_b_spirituality: 0,
+                choice_b_reward_text: "You invested in your health!",
+                prerequisite_event_id: "",
+                is_repeatable: "true"
+            },
+            // Advanced event that requires completing event 4 first
+            {
+                event_id: 11,
+                category: "entertainment",
+                intro_text: "The rock climbing gym offers you an instructor position!",
+                choice_a_text: "Accept and teach others",
+                choice_a_intellect: 2,
+                choice_a_looks: 1,
+                choice_a_body: 2,
+                choice_a_spirituality: 1,
+                choice_a_reward_text: "You became a mentor and inspiration!",
+                choice_b_text: "Decline but join competition",
+                choice_b_intellect: 0,
+                choice_b_looks: 2,
+                choice_b_body: 3,
+                choice_b_spirituality: 0,
+                choice_b_reward_text: "You pushed your limits and won medals!",
+                prerequisite_event_id: "4", // Requires event 4 to be completed
+                is_repeatable: "false"
+            },
+            // Chain event requiring event 5
+            {
+                event_id: 12,
+                category: "finances",
+                intro_text: "Your investments from the bonus paid off! Double or nothing?",
+                choice_a_text: "Play it safe",
+                choice_a_intellect: 2,
+                choice_a_looks: 0,
+                choice_a_body: 0,
+                choice_a_spirituality: 1,
+                choice_a_reward_text: "Wise choice! Steady growth secured.",
+                choice_b_text: "Go all in",
+                choice_b_intellect: 1,
+                choice_b_looks: 2,
+                choice_b_body: 0,
+                choice_b_spirituality: 0,
+                choice_b_reward_text: "Fortune favors the bold! Massive returns!",
+                prerequisite_event_id: "5",
+                is_repeatable: "false"
+            }
+        ];
+
+        const sampleGoldenEvents = [
+            {
+                stat_name: "intellect",
+                event_text: "Your mind transcends ordinary thinking! You've achieved enlightenment.",
+                token_name: "Scholar Token",
+                token_description: "Grants wisdom in future intellectual challenges",
+                token_icon: "🎓"
+            },
+            {
+                stat_name: "looks",
+                event_text: "You've reached peak attractiveness! People are drawn to your presence.",
+                token_name: "Beauty Token",
+                token_description: "Your charm opens doors everywhere",
+                token_icon: "💎"
+            },
+            {
+                stat_name: "body",
+                event_text: "Your physical form is perfected! You feel unstoppable.",
+                token_name: "Strength Token",
+                token_description: "Your body is a temple of power",
+                token_icon: "💪"
+            },
+            {
+                stat_name: "spirituality",
+                event_text: "You've found inner peace and cosmic connection.",
+                token_name: "Sage Token",
+                token_description: "You understand the deeper mysteries of existence",
+                token_icon: "🕊️"
+            }
+        ];
+
+        const wheelCategories = [
+            { name: "Education", category: "education", color: "#3498db" },
+            { name: "Social Life", category: "social", color: "#e74c3c" },
+            { name: "Wellness", category: "wellness", color: "#2ecc71" },
+            { name: "Entertainment", category: "entertainment", color: "#9b59b6" },
+            { name: "Finances", category: "finances", color: "#f39c12" }
+        ];
+
+        // Auto-load CSV files on startup
+        async function autoLoadCSVs() {
+            try {
+                // Try to load events.csv
+                const eventsResponse = await fetch('./events.csv');
+                if (eventsResponse.ok) {
+                    const eventsCSV = await eventsResponse.text();
+                    parseCSVData(eventsCSV, 'events');
+                    console.log('✅ Auto-loaded events.csv');
+                } else {
+                    console.log('📝 Using sample events data');
+                    gameState.events = sampleEvents;
+                }
+            } catch (error) {
+                console.log('📝 Using sample events data (events.csv not found)');
+                gameState.events = sampleEvents;
+            }
+
+            try {
+                // Try to load golden_events.csv
+                const goldenResponse = await fetch('./golden_events.csv');
+                if (goldenResponse.ok) {
+                    const goldenCSV = await goldenResponse.text();
+                    parseCSVData(goldenCSV, 'golden');
+                    console.log('✅ Auto-loaded golden_events.csv');
+                } else {
+                    console.log('⭐ Using sample golden events data');
+                    gameState.goldenEvents = sampleGoldenEvents;
+                }
+            } catch (error) {
+                console.log('⭐ Using sample golden events data (golden_events.csv not found)');
+                gameState.goldenEvents = sampleGoldenEvents;
+            }
+
+        }
+
+        function parseCSVData(csvContent, type) {
+            Papa.parse(csvContent, {
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    if (type === 'events') {
+                        gameState.events = results.data;
+                        console.log(`Loaded ${gameState.events.length} events from CSV`);
+                    } else if (type === 'golden') {
+                        gameState.goldenEvents = results.data.map(event => ({
+                            ...event,
+                            token_icon: getTokenIcon(event.stat_name)
+                        }));
+                        console.log(`Loaded ${gameState.goldenEvents.length} golden events from CSV`);
+                    }
+                },
+                error: function(error) {
+                    console.error('CSV parsing error:', error);
+                }
+            });
+        }
+
+
+        // Get token icon based on stat name
+        function getTokenIcon(statName) {
+            const icons = {
+                intellect: '🎓',
+                looks: '💎',
+                body: '💪',
+                spirituality: '🕊️'
+            };
+            return icons[statName] || '⭐';
+        }
+
+        // Start game
+        function startGame() {
+            // Use sample data if no CSV loaded
+
+            
+            if (!gameState.csvLoaded.golden) {
+                gameState.goldenEvents = sampleGoldenEvents;
+                console.log('Using sample golden events');
+            }
+            
+            // Initialize wheel config
+            gameState.wheelConfig = wheelCategories;
+            
+            // Hide upload section
+            document.getElementById('csv-upload-section').style.display = 'none';
+            
+            // Show game sections
+            document.querySelector('.stats-section').style.display = 'block';
+            document.getElementById('event-section').style.display = 'flex';
+            
+            // Load saved progress if exists
+            loadProgress();
+            
+            // Update display
+            updateStatsDisplay();
+            
+            // Mark game as started
+            gameState.gameStarted = true;
+        }
+
+
+
+        // Update stats display
+        function updateStatsDisplay() {
+            const stats = ['intellect', 'looks', 'body', 'spirituality'];
+            
+            stats.forEach(stat => {
+                const value = gameState.stats[stat];
+                const percentage = (value / 10) * 100;
+                
+                document.getElementById(`${stat}-value`).textContent = `${value}/10`;
+                const bar = document.getElementById(`${stat}-bar`);
+                bar.style.width = `${percentage}%`;
+                
+                if (value >= 10) {
+                    bar.classList.add('max');
+                } else {
+                    bar.classList.remove('max');
+                }
+            });
+            
+            // Update tokens
+            const tokensContainer = document.getElementById('tokens-container');
+            tokensContainer.innerHTML = '';
+            gameState.tokens.forEach(token => {
+                const tokenEl = document.createElement('div');
+                tokenEl.className = 'token';
+                tokenEl.textContent = token.icon;
+                tokenEl.title = token.name;
+                tokensContainer.appendChild(tokenEl);
+            });
+        }
+
+        // Show wheel popup
+        function showWheelPopup() {
+            const overlay = document.getElementById('wheel-overlay');
+            overlay.classList.add('active');
+            drawWheel();
+        }
+
+        // Hide wheel popup
+        function hideWheelPopup() {
+            const overlay = document.getElementById('wheel-overlay');
+            overlay.classList.remove('active');
+        }
+
+        // Draw wheel
+        function drawWheel(rotation = 0) {
+            const canvas = document.getElementById('wheelCanvas');
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 120;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(rotation);
+            
+            const segments = gameState.wheelConfig;
+            const anglePerSegment = (2 * Math.PI) / segments.length;
+            
+            segments.forEach((segment, index) => {
+                // Draw segment
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, radius, index * anglePerSegment, (index + 1) * anglePerSegment);
+                ctx.closePath();
+                
+                // Use gray color for undiscovered sections
+                if (gameState.discoveredCategories.has(segment.category)) {
+                    ctx.fillStyle = segment.color;
+                } else {
+                    ctx.fillStyle = '#808080'; // Gray for unknown sections
+                }
+                
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // Draw text
+                ctx.save();
+                ctx.rotate(index * anglePerSegment + anglePerSegment / 2);
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 14px Arial';
+                
+                // Show "???" for undiscovered sections
+                if (gameState.discoveredCategories.has(segment.category)) {
+                    ctx.fillText(segment.name, radius / 2, 5);
+                } else {
+                    ctx.font = 'bold 18px Arial';
+                    ctx.fillText('???', radius / 2, 5);
+                }
+                
+                ctx.restore();
+            });
+            
+            ctx.restore();
+            
+            // Draw center circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
+            ctx.fillStyle = '#333';
+            ctx.fill();
+            
+            // Draw pointer
+            ctx.beginPath();
+            ctx.moveTo(centerX - 15, 30);
+            ctx.lineTo(centerX + 15, 30);
+            ctx.lineTo(centerX, 50);
+            ctx.closePath();
+            ctx.fillStyle = '#FF0000';
+            ctx.fill();
+        }
+
+        // Show discovery animation
+        function showDiscoveryAnimation(categoryName) {
+            const wheelContainer = document.querySelector('.wheel-container');
+            
+            // Create discovery overlay element
+            const discoveryEl = document.createElement('div');
+            discoveryEl.className = 'discovery-overlay';
+            discoveryEl.innerHTML = `
+                🎉 NEW DISCOVERY! 🎉<br>
+                <span style="font-size: 24px; margin-top: 10px; display: block;">${categoryName}</span>
+            `;
+            
+            // Add to wheel container
+            wheelContainer.style.position = 'relative';
+            wheelContainer.appendChild(discoveryEl);
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                if (discoveryEl.parentNode) {
+                    discoveryEl.parentNode.removeChild(discoveryEl);
+                }
+            }, 2000);
+        }
+
+        // Spin wheel
+        function spinWheel() {
+            if (gameState.isSpinning) return;
+            
+            gameState.isSpinning = true;
+            const spinBtn = document.getElementById('wheel-spin-btn');
+            spinBtn.disabled = true;
+            spinBtn.textContent = 'Spinning...';
+            
+            const segments = gameState.wheelConfig;
+            const randomSegment = Math.floor(Math.random() * segments.length);
+            const anglePerSegment = (2 * Math.PI) / segments.length;
+            
+            // Calculate angle to position selected segment at the top where arrow points
+            const targetAngle = -randomSegment * anglePerSegment - anglePerSegment / 2 - Math.PI / 2;
+            const totalRotation = (Math.PI * 2 * 5) + targetAngle; // 5 full rotations plus target
+            
+            let currentRotation = 0;
+            const duration = 3000; // 3 seconds
+            const startTime = Date.now();
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Ease out cubic
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                currentRotation = totalRotation * easeOut;
+                
+                drawWheel(currentRotation);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Spin complete
+                    gameState.isSpinning = false;
+                    spinBtn.disabled = false;
+                    spinBtn.textContent = 'SPIN!';
+                    
+                    const selectedCategory = segments[randomSegment].category;
+                    const selectedCategoryName = segments[randomSegment].name;
+                    
+                    // Check if this is a new discovery
+                    const isNewDiscovery = !gameState.discoveredCategories.has(selectedCategory);
+                    
+                    // Mark category as discovered
+                    gameState.discoveredCategories.add(selectedCategory);
+                    saveProgress(); // Save the discovery
+                    
+                    // Show discovery animation if it's new
+                    if (isNewDiscovery) {
+                        showDiscoveryAnimation(selectedCategoryName);
+                        // Redraw wheel to show the discovered section
+                        setTimeout(() => {
+                            drawWheel(currentRotation);
+                        }, 100);
+                    }
+                    
+                    setTimeout(() => {
+                        hideWheelPopup();
+                        getRandomEvent(selectedCategory);
+                    }, isNewDiscovery ? 2500 : 500); // Longer delay for new discoveries
+                }
+            }
+            
+            animate();
+        }
+
+        // Get random event from category
+        function getRandomEvent(category) {
+            // Filter events by category and availability
+            const availableEvents = gameState.events.filter(event => {
+                // Check if event is in the right category
+                if (event.category !== category) return false;
+                
+                // Check if event has been used and is not repeatable
+                const eventId = parseInt(event.event_id) || event.event_id;
+                const isRepeatable = event.is_repeatable === "true" || event.is_repeatable === true || event.is_repeatable === "1";
+                if (!isRepeatable && (gameState.usedUniqueEvents.has(eventId) || gameState.usedUniqueEvents.has(String(eventId)))) {
+                    return false;
+                }
+                
+                // Check prerequisites
+                if (event.prerequisite_event_id && event.prerequisite_event_id !== "") {
+                    const prereqId = parseInt(event.prerequisite_event_id) || event.prerequisite_event_id;
+                    if (!gameState.completedEvents.has(prereqId) && !gameState.completedEvents.has(parseInt(prereqId))) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            // If no events available in this category, try to find any repeatable event
+            if (availableEvents.length === 0) {
+                const repeatableEvents = gameState.events.filter(event => {
+                    if (event.category !== category) return false;
+                    const isRepeatable = event.is_repeatable === "true" || event.is_repeatable === true || event.is_repeatable === "1";
+                    return isRepeatable;
+                });
+                
+                if (repeatableEvents.length > 0) {
+                    const event = repeatableEvents[Math.floor(Math.random() * repeatableEvents.length)];
+                    gameState.currentEvent = event;
+                    displayEvent(event);
+                } else {
+                    // Fallback: show a generic event
+                    console.warn('No events available for category:', category);
+                    continueToNextEvent();
+                }
+                return;
+            }
+            
+            // Select random event from available events
+            const event = availableEvents[Math.floor(Math.random() * availableEvents.length)];
+            gameState.currentEvent = event;
+            displayEvent(event);
+        }
+
+        // Display event
+        function displayEvent(event) {
+            const eventSection = document.getElementById('event-section');
+            
+            const categoryNames = {
+                education: 'Education',
+                social: 'Social Life',
+                wellness: 'Wellness',
+                entertainment: 'Entertainment',
+                finances: 'Finances'
+            };
+            
+            // Check if this is a newly discovered category
+            const isNewDiscovery = !gameState.discoveredCategories.has(event.category);
+            
+            let discoveryMessage = '';
+            if (isNewDiscovery) {
+                discoveryMessage = `<div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 10px; border-radius: 10px; margin-bottom: 15px; text-align: center; font-weight: bold;">
+                    ✨ New Category Discovered: ${categoryNames[event.category]}! ✨
+                </div>`;
+            }
+            
+            eventSection.innerHTML = `
+                ${discoveryMessage}
+                <div class="event-category">${categoryNames[event.category]}</div>
+                <div class="event-text">${event.intro_text}</div>
+                <div class="choices-container">
+                    <button class="choice-btn choice-a" onclick="processChoice('a')">
+                        ${event.choice_a_text}
+                    </button>
+                    <button class="choice-btn choice-b" onclick="processChoice('b')">
+                        ${event.choice_b_text}
+                    </button>
+                </div>
+            `;
+        }
+
+        // Process choice
+        function processChoice(choice) {
+            const event = gameState.currentEvent;
+            if (!event) return;
+            
+            // Mark event as completed (handle both string and number IDs)
+            const eventId = parseInt(event.event_id) || event.event_id;
+            gameState.completedEvents.add(eventId);
+            
+            // If event is not repeatable, mark it as used
+            const isRepeatable = event.is_repeatable === "true" || event.is_repeatable === true || event.is_repeatable === "1";
+            if (!isRepeatable) {
+                gameState.usedUniqueEvents.add(eventId);
+            }
+            
+            const statChanges = {};
+            let rewardText = '';
+            
+            if (choice === 'a') {
+                statChanges.intellect = parseInt(event.choice_a_intellect) || 0;
+                statChanges.looks = parseInt(event.choice_a_looks) || 0;
+                statChanges.body = parseInt(event.choice_a_body) || 0;
+                statChanges.spirituality = parseInt(event.choice_a_spirituality) || 0;
+                rewardText = event.choice_a_reward_text;
+            } else {
+                statChanges.intellect = parseInt(event.choice_b_intellect) || 0;
+                statChanges.looks = parseInt(event.choice_b_looks) || 0;
+                statChanges.body = parseInt(event.choice_b_body) || 0;
+                statChanges.spirituality = parseInt(event.choice_b_spirituality) || 0;
+                rewardText = event.choice_b_reward_text;
+            }
+            
+            // Apply stat changes
+            let maxedStats = [];
+            Object.keys(statChanges).forEach(stat => {
+                if (statChanges[stat] > 0) {
+                    gameState.stats[stat] = Math.min(10, gameState.stats[stat] + statChanges[stat]);
+                    if (gameState.stats[stat] >= 10) {
+                        maxedStats.push(stat);
+                    }
+                }
+            });
+            
+            // Display reward
+            displayReward(rewardText, statChanges);
+            
+            // Update stats display
+            updateStatsDisplay();
+            
+            // Check for golden events
+            if (maxedStats.length > 0) {
+                setTimeout(() => {
+                    triggerGoldenEvent(maxedStats[0]);
+                }, 2000);
+            } else {
+                // Continue to next event after delay
+                setTimeout(() => {
+                    continueToNextEvent();
+                }, 2500);
+            }
+            
+            // Save progress
+            saveProgress();
+        }
+
+        // Display reward
+        function displayReward(rewardText, statChanges) {
+            const eventSection = document.getElementById('event-section');
+            
+            let changesHtml = '';
+            const statIcons = {
+                intellect: '🧠',
+                looks: '✨',
+                body: '💪',
+                spirituality: '🕊️'
+            };
+            
+            Object.keys(statChanges).forEach(stat => {
+                if (statChanges[stat] > 0) {
+                    changesHtml += `
+                        <span class="stat-change">
+                            ${statIcons[stat]} +${statChanges[stat]}
+                        </span>
+                    `;
+                }
+            });
+            
+            eventSection.innerHTML = `
+                <div class="reward-display">
+                    <div style="font-size: 20px; margin-bottom: 15px;">✨ ${rewardText}</div>
+                    <div>${changesHtml}</div>
+                </div>
+            `;
+        }
+
+        // Trigger golden event
+        function triggerGoldenEvent(statName) {
+            // Filter all golden events for this stat
+            const matchingEvents = gameState.goldenEvents.filter(e => e.stat_name === statName);
+            if (matchingEvents.length === 0) return;
+
+            // Get current index for this stat (default 0)
+            if (!gameState.goldenEventIndex[statName]) {
+                gameState.goldenEventIndex[statName] = 0;
+            }
+
+            // Select the event
+            const index = gameState.goldenEventIndex[statName];
+            const goldenEvent = matchingEvents[index];
+
+            // Advance index (rotate)
+            gameState.goldenEventIndex[statName] = (index + 1) % matchingEvents.length;
+
+            // Add token
+            gameState.tokens.push({
+                name: goldenEvent.token_name,
+                icon: goldenEvent.token_icon,
+                stat: statName
+            });
+
+            // Reset stat to 0
+            gameState.stats[statName] = 0;
+
+            // Display golden event
+            const eventSection = document.getElementById('event-section');
+            eventSection.innerHTML = `
+                <div class="golden-event-display">
+                    <div class="golden-event-title">⭐ GOLDEN ACHIEVEMENT! ⭐</div>
+                    <div class="golden-event-text">${goldenEvent.event_text}</div>
+                    <div class="golden-token-earned">
+                        ${goldenEvent.token_icon} ${goldenEvent.token_name} Earned!
+                    </div>
+                    <div style="margin-top: 20px; font-size: 14px; opacity: 0.9;">
+                        ${goldenEvent.token_description}
+                    </div>
+                    <button class="choice-btn" style="margin-top: 25px; background: linear-gradient(135deg, #FFD700, #FFA500);" onclick="continueToNextEvent()">
+                        OK - Continue Journey
+                    </button>
+                </div>
+            `;
+
+            // Update display
+            updateStatsDisplay();
+            saveProgress();
+        }
+
+        // Continue to next event
+        function continueToNextEvent() {
+            const eventSection = document.getElementById('event-section');
+            eventSection.innerHTML = `
+                <button class="spin-btn" onclick="showWheelPopup()">
+                    🎯 Spin for Next Event!
+                </button>
+            `;
+        }
+
+        // Save progress
+        function saveProgress() {
+            const saveData = {
+                stats: gameState.stats,
+                tokens: gameState.tokens,
+                completedEvents: Array.from(gameState.completedEvents),
+                usedUniqueEvents: Array.from(gameState.usedUniqueEvents),
+                discoveredCategories: Array.from(gameState.discoveredCategories) // ADD THIS LINE
+            };
+            localStorage.setItem('lifeWheelSave', JSON.stringify(saveData));
+        }
+
+        // Load progress
+        function loadProgress() {
+            const saveData = localStorage.getItem('lifeWheelSave');
+            if (saveData) {
+                const data = JSON.parse(saveData);
+                gameState.stats = data.stats || gameState.stats;
+                gameState.tokens = data.tokens || [];
+                gameState.completedEvents = new Set(data.completedEvents || []);
+                gameState.usedUniqueEvents = new Set(data.usedUniqueEvents || []);
+                gameState.discoveredCategories = new Set(data.discoveredCategories || []); // ADD THIS LINE
+            }
+        }
+
+ 
+
+        // Reset game data
+        function resetGameData() {
+            if (confirm('Are you sure you want to clear all saved progress?')) {
+                localStorage.removeItem('lifeWheelSave');
+                location.reload();
+            }
+        }
+
+        // Initialize app on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Auto-load CSV files
+            await autoLoadCSVs();
+            
+            // Initialize wheel config
+            gameState.wheelConfig = wheelCategories;
+            
+            // Load saved progress if exists
+            loadProgress();
+            
+            // Update display
+            updateStatsDisplay();
+            
+            // Mark game as started
+            gameState.gameStarted = true;
+            
+            // Set up wheel spin button
+            document.getElementById('wheel-spin-btn').addEventListener('click', spinWheel);
+        });
+    </script>
+</body>
+</html>
